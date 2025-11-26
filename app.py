@@ -79,41 +79,44 @@ if df is not None:
         with col_fis1:
             st.markdown("<p style='text-align: center; margin-bottom: 0;'><small>Situação Cadastro SNISB</small></p>", unsafe_allow_html=True)
             if 'SITUACAO_CADASTRO_SNISB' in df.columns:
-                opcoes_cadastro = ['Todos'] + sorted(df['SITUACAO_CADASTRO_SNISB'].dropna().unique().tolist())
-                filtro_cadastro = st.selectbox(
+                opcoes_cadastro = sorted(df['SITUACAO_CADASTRO_SNISB'].dropna().unique().tolist())
+                filtro_cadastro = st.multiselect(
                     "Situação Cadastro SNISB",
                     opcoes_cadastro,
-                    index=0,
-                    label_visibility="collapsed"
+                    default=[],
+                    label_visibility="collapsed",
+                    placeholder="Selecione..."
                 )
             else:
-                filtro_cadastro = 'Todos'
+                filtro_cadastro = []
         
         with col_fis2:
             st.markdown("<p style='text-align: center; margin-bottom: 0;'><small>Situação Massa D'água</small></p>", unsafe_allow_html=True)
             if 'SITUACAO_MASSA_DAGUA' in df.columns:
-                opcoes_massa = ['Todos'] + sorted(df['SITUACAO_MASSA_DAGUA'].dropna().unique().tolist())
-                filtro_massa = st.selectbox(
+                opcoes_massa = sorted(df['SITUACAO_MASSA_DAGUA'].dropna().unique().tolist())
+                filtro_massa = st.multiselect(
                     "Situação Massa D'água",
                     opcoes_massa,
-                    index=0,
-                    label_visibility="collapsed"
+                    default=[],
+                    label_visibility="collapsed",
+                    placeholder="Selecione..."
                 )
             else:
-                filtro_massa = 'Todos'
+                filtro_massa = []
         
         with col_fis3:
             st.markdown("<p style='text-align: center; margin-bottom: 0;'><small>Situação Comparação SIOUT</small></p>", unsafe_allow_html=True)
             if 'SITUACAO_COMPARACAO_SIOUT' in df.columns:
-                opcoes_comparacao = ['Todos'] + sorted(df['SITUACAO_COMPARACAO_SIOUT'].dropna().unique().tolist())
-                filtro_comparacao = st.selectbox(
+                opcoes_comparacao = sorted(df['SITUACAO_COMPARACAO_SIOUT'].dropna().unique().tolist())
+                filtro_comparacao = st.multiselect(
                     "Situação Comparação SIOUT",
                     opcoes_comparacao,
-                    index=0,
-                    label_visibility="collapsed"
+                    default=[],
+                    label_visibility="collapsed",
+                    placeholder="Selecione..."
                 )
             else:
-                filtro_comparacao = 'Todos'
+                filtro_comparacao = []
         
         with col_fis4:
             st.markdown("<p style='text-align: center; margin-bottom: 0;'><small>Código SNISB</small></p>", unsafe_allow_html=True)
@@ -121,16 +124,17 @@ if df is not None:
                 # Obter lista de códigos únicos
                 codigos_unicos = sorted(df['CÓDIGO SNISB'].dropna().astype(str).unique().tolist())
                 
-                # Campo de busca com autocompletar
-                filtro_codigo = st.selectbox(
+                # Campo de busca com multiseleção
+                filtro_codigo = st.multiselect(
                     "Código SNISB",
-                    ['Todos'] + codigos_unicos,
-                    index=0,
+                    codigos_unicos,
+                    default=[],
                     label_visibility="collapsed",
+                    placeholder="Selecione...",
                     key="filtro_codigo_snisb"
                 )
             else:
-                filtro_codigo = 'Todos'
+                filtro_codigo = []
         
         # Aplicar os filtros
         df_filtrado = df.copy()
@@ -152,21 +156,21 @@ if df is not None:
                 filtros_ativos.append('DATA DO CADASTRO')
         
         # Filtro de Código SNISB
-        if filtro_codigo != 'Todos':
+        if filtro_codigo:
             if 'CÓDIGO SNISB' in df_filtrado.columns:
-                df_filtrado = df_filtrado[df_filtrado['CÓDIGO SNISB'].astype(str) == filtro_codigo]
+                df_filtrado = df_filtrado[df_filtrado['CÓDIGO SNISB'].astype(str).isin(filtro_codigo)]
                 filtros_ativos.append('CÓDIGO SNISB')
         
-        if filtro_cadastro != 'Todos':
-            df_filtrado = df_filtrado[df_filtrado['SITUACAO_CADASTRO_SNISB'] == filtro_cadastro]
+        if filtro_cadastro:
+            df_filtrado = df_filtrado[df_filtrado['SITUACAO_CADASTRO_SNISB'].isin(filtro_cadastro)]
             filtros_ativos.append('SITUACAO_CADASTRO_SNISB')
         
-        if filtro_massa != 'Todos':
-            df_filtrado = df_filtrado[df_filtrado['SITUACAO_MASSA_DAGUA'] == filtro_massa]
+        if filtro_massa:
+            df_filtrado = df_filtrado[df_filtrado['SITUACAO_MASSA_DAGUA'].isin(filtro_massa)]
             filtros_ativos.append('SITUACAO_MASSA_DAGUA')
         
-        if filtro_comparacao != 'Todos':
-            df_filtrado = df_filtrado[df_filtrado['SITUACAO_COMPARACAO_SIOUT'] == filtro_comparacao]
+        if filtro_comparacao:
+            df_filtrado = df_filtrado[df_filtrado['SITUACAO_COMPARACAO_SIOUT'].isin(filtro_comparacao)]
             filtros_ativos.append('SITUACAO_COMPARACAO_SIOUT')
         
         # Definir texto baseado se há filtros ativos
