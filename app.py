@@ -222,12 +222,12 @@ if df is not None:
                 colunas_estilo.append('SITUACAO_COMPARACAO_SIOUT')
             
             if colunas_estilo:
-                styled_df = df_pagina.style.applymap(colorir_situacao, subset=colunas_estilo)
-                st.dataframe(styled_df, use_container_width=True, height=600, column_config={
+                styled_df = df_pagina.style.map(colorir_situacao, subset=colunas_estilo)
+                st.dataframe(styled_df, width='stretch', height=600, column_config={
                     col: st.column_config.TextColumn(width="medium") for col in df_pagina.columns
                 })
             else:
-                st.dataframe(df_pagina, use_container_width=True, height=600, column_config={
+                st.dataframe(df_pagina, width='stretch', height=600, column_config={
                     col: st.column_config.TextColumn(width="medium") for col in df_pagina.columns
                 })
             
@@ -427,13 +427,15 @@ if df is not None:
                         if pd.isna(ponto_wkt):
                             return None, None
                         # Remove "POINT(" e ")" e separa as coordenadas
-                        coords = str(ponto_wkt).replace('POINT(', '').replace(')', '').split()
+                        coords = str(ponto_wkt).strip().replace('POINT(', '').replace(')', '').split()
                         if len(coords) == 2:
                             lon = float(coords[0])
                             lat = float(coords[1])
-                            return lat, lon
+                            # Validar coordenadas do Brasil (aproximado)
+                            if -34 <= lat <= 6 and -74 <= lon <= -28:
+                                return lat, lon
                         return None, None
-                    except:
+                    except (ValueError, AttributeError, IndexError):
                         return None, None
                 
                 # Aplicar extração
@@ -529,7 +531,7 @@ if df is not None:
                         ).add_to(mapa)
                     
                     # Exibir mapa (returned_objects desabilitado para evitar recarregamento)
-                    st_folium(mapa, width=None, height=650, use_container_width=True, returned_objects=[])
+                    st_folium(mapa, width=None, height=650, returned_objects=[])
                 else:
                     st.info("Nenhuma coordenada válida encontrada nos dados filtrados.")
             else:
@@ -542,7 +544,29 @@ if df is not None:
         st.markdown("")
         
         # Criar expanders para cada seção
-        with st.expander("Colunas do Dataset", expanded=True):
+        with st.expander("Critérios de Elegibilidade", expanded=True):
+            st.markdown("""
+            ### Cadastros Elegíveis para Análise
+            
+            Os registros considerados válidos para análise devem atender aos seguintes critérios:
+            
+            **Tipo de Estrutura:**
+            - Apenas Barragem
+            - Apenas Açude
+            
+            **Classificação do Cadastro:**
+            - Registros com classificação "Cadastro" devem possuir número de autorização/outorga válido
+            - Demais classificações diferentes de "Cadastro" são aceitas
+            
+            **Finalidades de Uso:**
+            - São excluídas estruturas destinadas exclusivamente a:
+              - Mineração
+              - Aproveitamento hidrelétrico
+              - Aquicultura/Piscicultura
+            - Demais finalidades de uso são consideradas elegíveis
+            """)
+        
+        with st.expander("Colunas do Dataset"):
             st.markdown("""
             ### Descrição das Colunas
             
@@ -628,7 +652,7 @@ if df is not None:
         with st.expander("Dicas de Uso"):
             st.markdown("""
             ### Como usar o sistema
-            x
+            
             **1. Filtros de Data**
             - Clique nos campos de data para abrir o calendário
             - Escolha o período desejado (data inicial e final)
@@ -694,14 +718,6 @@ if df is not None:
             **P: Posso voltar para o dataset completo depois de filtrar?**
             R: Sim, selecione "Todos" em cada filtro ou recarregue a página (F5).
             """)
-    
-    # Rodapé
-    st.markdown("---")
-    st.markdown("""
-    <div style='text-align: center; color: gray;'>
-        <small>Arquivo: REGISTROS_SNISB_EM_POLIGONOS_ANA_RS.xlsx | Última atualização: Novembro 2025</small>
-    </div>
-    """, unsafe_allow_html=True)
 
 else:
     st.error("Não foi possível carregar os dados. Verifique se o arquivo 'REGISTROS_SNISB_EM_POLIGONOS_ANA_RS.xlsx' está na pasta correta.")
